@@ -148,7 +148,7 @@ df %>%
 
 We've discovered that approximately 81.2% of the people sampled in this data are white, which is a huge difference with 
 respect to the other races.
-Nevertheless, other sample sizes are also large, with almost 8K black people sampled & 2.7K from other races.
+Nevertheless, other sample sizes are also large, with almost 6K black people sampled & 2.1K from other races.
 
 
 * * *
@@ -165,7 +165,10 @@ variable is the relative frequency with respect to each race.
 
 
 <b>NOTE:</b> We compare the relative frequencies to adjust for the large difference in sample sizes we found in the last bar chart.
+
+
 * * *
+
 ```{r Table: Opinion of Family Income}
 
 
@@ -187,10 +190,11 @@ data <-
 
 data
 ```
+
 * * *
 
 Now we can create a barplot using the ggplot2 package in order
-to observe the opinion of family income grouped by race.
+to visualize the opinion of family income grouped by race.
 
 * * *
 
@@ -203,7 +207,7 @@ ggplot(data = data,
         geom_bar(stat = "identity") +
         labs(title = "Opinion of Family Income",
              x = "",
-             y = "Count") +
+             y = "Percentage") +
         facet_wrap(. ~ race) +
         theme_light() +
         theme(
@@ -219,7 +223,9 @@ ggplot(data = data,
 
 
 ```
+
 * * *
+
 
 We can observe that the average category is the most frequent one
 in every single panel.
@@ -237,6 +243,18 @@ We'll see if it's justified later on...
 * * *
 
 ## Distribution of the Total Family Income
+* * *
+
+Our next step is to take a quick look at the distribution of the total family 
+income. So far, we've seen very few people consider themselves to have an 
+income above average, which is why (empirically) we would expect a distribution
+skewed to the right.
+
+We'll check with a histogram & a summary table.
+
+
+* * *
+
 ```{r Distribution of Total Family Income}
 # Histogram of the Income variable
 ggplot(data = df, mapping = aes(x = income)) +
@@ -263,8 +281,28 @@ ggplot(data = df, mapping = aes(x = income)) +
 with(df, summary(income))
 ```
 
+* * *
+
+
+We can appreciate both in the histogram & summary table, that the distribution of
+the family income is skewed to the right.
+However, we also want to see how this relationship varies with respect to each
+different race, which is our next EDA plot.
+
+
+* * *
 # Variability & Mean of Family Income
-```{r Variability of Total Family Income}
+* * *
+
+
+As aforementioned, we will visualize the variability of the family income when clustered by race.
+This is why we'll create a Violin Plot with a Boxplot inside (and also
+a red dot that represents the mean of each grouped sample).
+
+
+* * *
+
+```{r Violin Plot}
 # Violin Plot: Income by Race
 ggplot(data = df, mapping = aes(x = income, y = race, fill = race)) +
         geom_violin(alpha = .9, color = "gray") +
@@ -277,6 +315,7 @@ ggplot(data = df, mapping = aes(x = income, y = race, fill = race)) +
                 x = "Income",
                 y = "Race"
         ) +
+        scale_x_continuous(breaks = seq(0, 15E4, by = 25E3)) +
         scale_fill_brewer(palette = "Set3") +
         scale_color_viridis_d(option = "viridis", begin = .7) +
         theme(
@@ -292,6 +331,23 @@ ggplot(data = df, mapping = aes(x = income, y = race, fill = race)) +
                                             color = "dimgrey")
         ) + guides(col = "none", fill = "none", 
                    shape = guide_legend(title = "Statistic"))
+```
+
+* * *
+
+
+We see that the three violin plots are right-skewed (mean > median, right-tailed kernel density & also there's a lot out of outliers).
+Moreover, the variances of each group are approximately equal.
+It also seems that white people have the larger mean & median income while
+black people have the smaller.
+To evaluate this difference more rigorously, we'll get the quartiles & the 
+mean per each group.
+
+
+
+* * *
+
+```{r Variability of Total Family Income}
 
 # --- Quantiles, shown in the Boxplot ---
 df %>% 
@@ -309,8 +365,97 @@ lm(data = df, formula = income ~ race - 1) %>% coef()
 
 * * *
 
+Numerically, everything is as we would expect (as seen in the violin plot).
+It's also noteworthy to mention there's difference of 26K dollars in the means of white & black people, which is empirically significant.
+
+Finally, we'll test this using techniques of Statistical Inference.
+
+
+
+* * *
+
 ## Part 4: Inference
 
-NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
-button (green button with orange arrow) above. Make sure that your code is visible
-in the project you submit. Delete this note when before you submit your work.
+* * *
+
+
+We are going to test whether there is a significant difference 
+in the means of several groups or not. Out of all the Statistical Inference
+Methods used in introductory courses, the one that is best suited for
+this problem is <b>ANOVA</b>.
+
+So the Null Hypothesis & Alternative Hypothesis are:
+
+# There is no mean that is significantly different
+$H_{0}: \mu_{i} = \mu_{j} \ $
+
+# There is at least one mean significantly different
+$H_{A}: \exists\ \mu_{i}\neq \mu_{j}$
+
+
+* * *
+
+## Statistical Assumptions of the ANOVA Model
+
+#### I) Independence
+The data given by the GSS is a Random Sample, so we can assume that each
+observation is independent.
+
+
+#### II) Normality
+As mentioned earlier, each of the distributions are right-skewed.
+Nevertheless, because of our large sample we can apply the Central 
+Limit Theorem and meet the assumption of normality.
+
+
+#### III) Homoscedasticity
+As evidenced in the violin plot, there is not much difference in the variances of each of the groups, so we can assume that they are 
+fairly equal.
+
+#### ANOVA Test: Analysis of Variance
+
+```{r ANOVA Test}
+test_data <- gss %>%
+  select(coninc, race)
+
+# Fitting the Linear Regression Model
+# Income as Response
+# Race as Dummy Predictor
+fit <-
+        lm(
+                data = test_data,
+                formula = coninc ~ race
+        )
+
+# Applying the ANOVA f-test to the Linear Model
+test <-
+        anova(fit)
+
+test
+```
+
+The outcome of the ANOVA Test has an F-Statistic of 675.08 and a 
+p-value of less that 2.2e-16, which provides an extremely strong evidence
+against the Null Hypothesis.
+
+#### Pairwise T Tests: Bonferroni Correction
+
+We can also check the difference in means between each groups, using
+Pairwise T-tests with Bonferroni Correction
+
+```{r Pairwise T-tests}
+pairwise_tests <-
+        pairwise.t.test(x=test_data$coninc, 
+                        g = test_data$race,
+                        p.adjust.method = "bonferroni", 
+                        alternative = "two.sided")
+                        
+pairwise_tests
+```
+
+
+#### Conclussion 
+
+Thus, we <b>reject the Null Hypothesis</b> and accepts the Alternative Hypothesis, we conclude that there is a significant difference in means
+between groups among at least one pair.
+Hence, there is an association between race and the total family income.

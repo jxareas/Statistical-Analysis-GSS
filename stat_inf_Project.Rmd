@@ -110,7 +110,7 @@ We can easily create a barplot & a table to evaluate this, which is what we'll d
 
 * * *
 
-```{r Number of Survey Respondents}
+```{r Number of Survey Respondents, echo=FALSE}
 # Barchart
 ggplot(data = df, mapping = aes(x = race, fill = race)) +
   geom_bar(aes(y = (..count..) / sum(..count..))) +
@@ -169,7 +169,7 @@ variable is the relative frequency with respect to each race.
 
 * * *
 
-```{r Table: Opinion of Family Income}
+```{r Table: Opinion of Family Income, echo=FALSE}
 
 
 data <- 
@@ -198,7 +198,7 @@ to visualize the opinion of family income grouped by race.
 
 * * *
 
-```{r Plot: Opinion of Family Income}
+```{r Plot: Opinion of Family Income, echo=FALSE}
 
 ggplot(data = data,
        mapping = aes(x = finrela,
@@ -255,7 +255,7 @@ We'll check with a histogram & a summary table.
 
 * * *
 
-```{r Distribution of Total Family Income}
+```{r Distribution of Total Family Income, echo=FALSE}
 # Histogram of the Income variable
 ggplot(data = df, mapping = aes(x = income)) +
         geom_histogram(fill = "skyblue", col = "black") +
@@ -302,7 +302,7 @@ a red dot that represents the mean of each grouped sample).
 
 * * *
 
-```{r Violin Plot}
+```{r Violin Plot, echo=FALSE}
 # Violin Plot: Income by Race
 ggplot(data = df, mapping = aes(x = income, y = race, fill = race)) +
         geom_violin(alpha = .9, color = "gray") +
@@ -347,7 +347,7 @@ mean per each group.
 
 * * *
 
-```{r Variability of Total Family Income}
+```{r Variability of Total Family Income, echo=FALSE}
 
 # --- Quantiles, shown in the Boxplot ---
 df %>% 
@@ -414,7 +414,7 @@ fairly equal.
 
 #### ANOVA Test: Analysis of Variance
 
-```{r ANOVA Test}
+```{r ANOVA Test, echo=FALSE}
 test_data <- gss %>%
   select(coninc, race)
 
@@ -443,7 +443,7 @@ against the Null Hypothesis.
 We can also check the difference in means between each groups, using
 Pairwise T-tests with Bonferroni Correction
 
-```{r Pairwise T-tests}
+```{r Pairwise T-tests, echo=FALSE}
 pairwise_tests <-
         pairwise.t.test(x=test_data$coninc, 
                         g = test_data$race,
